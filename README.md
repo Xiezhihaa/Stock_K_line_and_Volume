@@ -17,6 +17,12 @@
 3. 輸入股票代號
 4. 跑出 html 檔
 
+技術要求
+----
+1. python 3.7
+2. pyecharts
+3. pandas
+
 待解決程式問題
 ----
 1. 將使用 function 功能簡化程式
