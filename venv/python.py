@@ -133,6 +133,7 @@ bar=(
     )
 )
 
+#將 Kline, line, bar 圖重疊
 overlap_kline_line=kline.overlap(line)
 
 grid_chart=(
