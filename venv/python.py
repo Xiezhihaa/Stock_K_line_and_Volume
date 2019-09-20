@@ -27,20 +27,26 @@ def twstock_code(stock_code0):
     if istwstock == True:
         global stockIDstring
         stockIDstring = stock_code0 + '.TW'
-        global twstockIDint
-        twstockIDint = eval(stock_code0)
-        return stockIDstring,twstockIDint
+        global stockIDint
+        stockIDint = eval(stock_code0)
+        return stockIDstring,stockIDint
     if istwstock== False:
         print("查無代碼")
 
 #國外股票代碼處理
 def foreginstock_code(stock_code0):
+    global stockIDstring
+    global stockIDint
+    stockIDstring = stock_code0
+    stockIDint = stock_code0
     return stockIDstring
 
 #時間處理
 def date(timedateinput):
     timedate=[]
+    global timeoutput
     timedate=timedateinput.split('/')
+
     year=eval(timedate[0])
     month=eval(timedate[1])
     day=eval(timedate[2])
@@ -52,49 +58,65 @@ def date(timedateinput):
     return timeoutput
 
 # 獲取臺灣股票資訊
-def twstockinformation(stockIDstring,starttime,endtime):
-    global df_twstockIDint
-    df_twstockIDint= pdr.data.DataReader(stockIDstring, 'yahoo', start=starttime, end=endtime)  # 從yahoo取得歷年股價
-    df_twstockIDint.index = df_twstockIDint.index.format(formatter=lambda x: x.strftime("%Y-%m-%d"))
+def stockinformation(stockIDstring,starttime,endtime):
+    global df_stockIDint
+    df_stockIDint= pdr.data.DataReader(stockIDstring, 'yahoo', start=starttime, end=endtime)  # 從yahoo取得歷年股價
+    df_stockIDint.index = df_stockIDint.index.format(formatter=lambda x: x.strftime("%Y-%m-%d"))
 
-    numberofday = len(df_twstockIDint.index) - 1
+    numberofday = len(df_stockIDint.index) - 1
 
     global stock_price
     stock_price = []
     for i in range(numberofday):
         stock_price.append([])
-        stock_price[i].append(df_twstockIDint['Open'][i])
-        stock_price[i].append(df_twstockIDint['Close'][i])
-        stock_price[i].append(df_twstockIDint['Low'][i])
-        stock_price[i].append(df_twstockIDint['High'][i])
+        stock_price[i].append(df_stockIDint['Open'][i])
+        stock_price[i].append(df_stockIDint['Close'][i])
+        stock_price[i].append(df_stockIDint['Low'][i])
+        stock_price[i].append(df_stockIDint['High'][i])
 
     global stock_date
     stock_date = []
     for i in range(numberofday):
-        stock_date.insert(i, df_twstockIDint.index[i])
+        stock_date.insert(i, df_stockIDint.index[i])
 
-    global stock_volume
-    stock_volume = []
+    global stock_volume_red
+    global stock_volume_green
+    global stock_volume_gray
+    stock_volume_red = [0]
+    stock_volume_green = [0]
+    stock_volume_gray = []
+    stock_volume_gray.append(df_stockIDint['Volume'][0])
+
     for i in range(numberofday):
-        stock_volume.append(df_twstockIDint['Volume'][i])
-    return stock_price, stock_date, stock_volume,df_twstockIDint
+        if df_stockIDint['Close'][i+1]>df_stockIDint['Close'][i]:
+            stock_volume_red.append(df_stockIDint['Volume'][i+1])
+        else:
+            stock_volume_red.append(0.00)
 
-#獲取國外股價資訊
-def forgeinstockinformation(stockIDstring,starttime,endtime):
-    df_stockIDstring = pdr.data.DataReader(stockIDstring, 'yahoo', start=starttime, end=endtime)  # 從yahoo取得歷年股價
-    df_stockIDstring.index = df_twstockIDint.index.format(formatter=lambda x: x.strftime("%Y-%m-%d"))
-    return df_stockIDstring, df_stockIDstring.index
+    for i in range(numberofday):
+        if df_stockIDint['Close'][i+1]<df_stockIDint['Close'][i]:
+            stock_volume_green.append(df_stockIDint['Volume'][i + 1])
+        else:
+            stock_volume_green.append(float(0))
+
+    for i in range(numberofday):
+        if df_stockIDint['Close'][i+1]==df_stockIDint['Close'][i]:
+            stock_volume_gray.append(df_stockIDint['Volume'][i + 1])
+        else:
+            stock_volume_gray.append(float(0))
+
+    return stock_price, stock_date, stock_volume_red,stock_volume_green,stock_volume_gray,df_stockIDint
 
 #計算移動平均線
-def SMA(df_twstockIDint):
+def SMA():
     global sma_10, sma_120,sma_240
-    sma_10 = talib.SMA(np.array(df_twstockIDint['Close']), 10)
-    sma_120 = talib.SMA(np.array(df_twstockIDint['Close']), 120)
-    sma_240 = talib.SMA(np.array(df_twstockIDint['Close']), 240)
+    sma_10 = talib.SMA(np.array(df_stockIDint['Close']), 10)
+    sma_120 = talib.SMA(np.array(df_stockIDint['Close']), 120)
+    sma_240 = talib.SMA(np.array(df_stockIDint['Close']), 240)
     return sma_10,sma_120,sma_240
 
 #繪圖
-def chart(stock_date,stock_price,sma_10,sma_120,sma_240,stock_volume):
+def chart():
     kline=(
         Kline()
         .add_xaxis(stock_date)
@@ -149,14 +171,22 @@ def chart(stock_date,stock_price,sma_10,sma_120,sma_240,stock_volume):
         )
     )
 
-    bar=(
+    bar = (
         Bar()
-        .add_xaxis(stock_date)
-        .add_yaxis("交易量", stock_volume,
-                    xaxis_index=1, yaxis_index=1, label_opts=opts.LabelOpts(is_show=False),
-                    itemstyle_opts=opts.ItemStyleOpts(color="#3B4856", color0="#A73835"),
-                    )
-        .set_global_opts(
+            .add_xaxis(stock_date)
+            .add_yaxis("交易量", stock_volume_red, gap="0%",
+                       xaxis_index=1, yaxis_index=1, label_opts=opts.LabelOpts(is_show=False),
+                       itemstyle_opts=opts.ItemStyleOpts(color="#A73835"),
+                       )
+            .add_yaxis("交易量", stock_volume_green,gap="0%",
+                       xaxis_index=1, yaxis_index=1, label_opts=opts.LabelOpts(is_show=False),
+                       itemstyle_opts=opts.ItemStyleOpts(color="#424A56"),
+                       )
+            .add_yaxis("交易量", stock_volume_gray,gap="0%",
+                       xaxis_index=1, yaxis_index=1, label_opts=opts.LabelOpts(is_show=False),
+                       itemstyle_opts=opts.ItemStyleOpts(color="#404143")
+                       )
+            .set_global_opts(
             xaxis_opts=opts.AxisOpts(type_="category", is_scale=True, grid_index=1, boundary_gap=False,
                                      axisline_opts=opts.AxisLineOpts(is_on_zero=False),
                                      axistick_opts=opts.AxisTickOpts(is_show=False),
@@ -174,6 +204,7 @@ def chart(stock_date,stock_price,sma_10,sma_120,sma_240,stock_volume):
         )
     )
 
+
     overlap_kline_line = kline.overlap(line)
 
     global grid_chart
@@ -187,25 +218,31 @@ def chart(stock_date,stock_price,sma_10,sma_120,sma_240,stock_volume):
              grid_opts=opts.GridOpts(pos_left="10%", pos_right="8%", pos_top="70%", height="16%"), )
     )
 
-    return grid_chart
+    grid_chart.render()
+
 
 #設定參數
 yourchoose=input("請選擇你欲查詢股票："
                  "1：臺灣國內股票"
                  "2：國外股票")
-stock_code0=input("請輸入你要查詢的股票代號")
-starttimeinput=input("請輸入欲查詢起始時間，格式如2019/9/1")
-endtimeinput=input("請輸入欲查詢結束時間，格式如2019/9/1")
-starttime=date(starttimeinput)
-endtime=date(endtimeinput)
+if yourchoose=="1" or "2":
+    stock_code0 = input("請輸入你要查詢的股票代號")
+    starttimeinput = input("請輸入欲查詢起始時間，格式如2019/9/1")
+    endtimeinput = input("請輸入欲查詢結束時間，格式如2019/9/1")
+    starttime = date(starttimeinput)
+    endtime = date(endtimeinput)
 
-
-twstock_code(stock_code0)
-print(stockIDstring)
-twstockinformation(stockIDstring,starttime,endtime)
-SMA(df_twstockIDint)
-grid_chart=chart(stock_date,stock_price,sma_10,sma_120,sma_240,stock_volume)
-grid_chart.render()
-print(stock_date)
+    if yourchoose=="1":
+        twstock_code(stock_code0)
+        stockinformation(stockIDstring, starttime, endtime)
+        SMA()
+        chart()
+    elif yourchoose == '2':
+        foreginstock_code(stock_code0)
+        stockinformation(stockIDstring, starttime, endtime)
+        SMA()
+        chart()
+else:
+    print("請輸入數字 1 與 2")
 
 #window.mainloop()
