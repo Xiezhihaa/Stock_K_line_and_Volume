@@ -41,6 +41,15 @@ elem_send.click()
 browser.get(url)
 
 #獲取表格資料
+tablet = browser.find_element_by_class_name("/html/body/div[4]/div[3]/div[2]/div[2]/div[3]/div[3]/div[1]/div[2]")
+trlist = browser.find_elements_by_tag_name('tr')
+
+#會出現大量不需要資料，待解決
+for row in trlist:
+    tdlist = row.find_elements_by_tag_name('td')
+    for col in tdlist:
+        print(col.text+'\t',end='')
+
 
 #將表格資料匯入
 #獲取表格資料 SQL
