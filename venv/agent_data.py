@@ -26,8 +26,8 @@ elem_login.click()
 browser.implicitly_wait(10)
 
 #轉進頁框
-browser.switch_to.frame("fancybox-frame1571105650798")
-browser.switch_to.frame("fancybox-frame1571106072018")
+iframe = browser.find_element_by_xpath('/html/body/div[7]/div/div/div/iframe')
+browser.switch_to.frame(iframe)
 #登入帳號
 elem_usr = browser.find_element_by_xpath('//*[@id="LoginForm_email"]')
 elem_usr.send_keys("you email")
@@ -41,10 +41,11 @@ elem_send.click()
 browser.get(url)
 
 #獲取表格資料
-tablet = browser.find_element_by_class_name("/html/body/div[4]/div[3]/div[2]/div[2]/div[3]/div[3]/div[1]/div[2]")
-trlist = browser.find_elements_by_tag_name('tr')
+tablet_buy = browser.find_element_by_xpath("/html/body/div[4]/div[3]/div[2]/div[2]/div[3]/div[3]/div[1]/div[2]/table")
+table_sell = browser.find_element_by_xpath("/html/body/div[4]/div[3]/div[2]/div[2]/div[3]/div[3]/div[2]/div[2]/table")
+trlist = tablet.find_elements_by_tag_name('tr')
 
-#會出現大量不需要資料，待解決
+#輸出資料
 for row in trlist:
     tdlist = row.find_elements_by_tag_name('td')
     for col in tdlist:
