@@ -46,10 +46,16 @@ table_sell = browser.find_element_by_xpath("/html/body/div[4]/div[3]/div[2]/div[
 trlist = tablet.find_elements_by_tag_name('tr')
 
 #輸出資料
-for row in trlist:
+#[券商名稱,買進,賣出,買超,均價]
+global agent1
+agent1 =[]
+
+for row in trlist_buy:
     tdlist = row.find_elements_by_tag_name('td')
+    arr=[]
     for col in tdlist:
-        print(col.text+'\t',end='')
+        arr.append(col.text)
+    agent1.append(arr)
 
 
 #將表格資料匯入
