@@ -58,5 +58,5 @@ for row in trlist_buy:
     agent1.append(arr)
 
 
-#將表格資料匯入
-#獲取表格資料 SQL
+#將表格資料匯入 
+#獲取表格資料 
