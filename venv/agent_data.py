@@ -25,10 +25,10 @@ def into_website(url,url1):
     # 登入帳號
     elem_usr = browser.find_element_by_xpath('//*[@id="LoginForm_email"]')
     time.sleep(20)
-    elem_usr.send_keys(your email)
+    elem_usr.send_keys("nagi30912@gmail.com")
     # 登入密碼
     elem_pass = browser.find_element_by_xpath('//*[@id="LoginForm_password"]')
-    elem_pass.send_keys(your password)
+    elem_pass.send_keys("Python404220008")
     # 登入
     elem_login = browser.find_element_by_xpath('//*[@id="login-form"]/div[5]/button')
     elem_login.click()
@@ -64,6 +64,43 @@ def get_sell():
         for col in tdlist:
             arr.append(col.text)
         agent_sell.append(arr)
+
+def get_conn_db():
+    try:
+        db = pymysql.connect(host='127.0.0.1',user='root',passwd='',port=3306,charset='utf8',db='')
+    except pymysql.Error as e:
+        print(e)
+        print("連接資料庫失敗")
+
+def close_conn_db():
+    try:
+        if db.conn:
+            db.close()
+    except pymysql.Error as e:
+        print(e)
+        print("關閉資料庫失敗")
+
+def add_data():
+    sql = 'INSERT INTO'
+    try:
+        db.get_conn_db()
+        sursor = db.conn.cursor()
+        cursor.execute(sql,)
+        db.conn.commit()
+        return 1
+    except AttributeError as e:
+        print('Error:',e)
+        return 0
+    except TypeError as e:
+        print('Error:',e)
+        db.conn.commit()
+        db.conn.rollback()
+        return 0
+    finally:
+        cursor.close()
+        db.close_conn_db()
+
+
 
 stockID = input("請輸入你要查詢的股票代號")
 date = input("請輸入欲查詢起始時間，格式如2019-09-01")
