@@ -28,10 +28,10 @@ def into_website(url,url1):
     # 登入帳號
     elem_usr = browser.find_element_by_xpath('//*[@id="LoginForm_email"]')
     time.sleep(20)
-    elem_usr.send_keys("nagi30912@gmail.com")
+    elem_usr.send_keys(youremaol)
     # 登入密碼
     elem_pass = browser.find_element_by_xpath('//*[@id="LoginForm_password"]')
-    elem_pass.send_keys("Python404220008")
+    elem_pass.send_keys(yourpassword)
     # 登入
     elem_login = browser.find_element_by_xpath('//*[@id="login-form"]/div[5]/button')
     elem_login.click()
